@@ -1,47 +1,45 @@
 const Koa = require('koa');
-
+const fs = require('fs')
 const app = new Koa();
 
-// x-response-time
+/**
+ * 从app/view目录读取HTML文件
+ * @param {string} page 路由指向的页面
+ * @returns {Promise<any>}
+ */
+function readPage(page) {
+    return new Promise((resolve, reject) => {
+        const viewUrl = `./app/view/${page}`;
+        fs.readFile(viewUrl, 'utf8', (err, data) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(data)
+            }
+        })
+    })
+}
 
-// app.use(async (ctx, next) => {
-//     const start = Date.now();
-//     await next();
-//     const ms = Date.now() - start;
-//     // 向响应头中添加数据
-//     ctx.set('X-Response-Time', `${ms}ms`);
-// });
-
-// // logger
-
-// app.use(async (ctx, next) => {
-//     const start = Date.now();
-//     await next();
-//     const ms = Date.now() - start;
-//     console.log(`${ctx.method} ${ctx.url} - ${ms}`);
-// });
-
-// // ctx:context（上下文）
-// app.use(ctx => {
-//     ctx.response.body = 'hello world';
-// })
-
-app.use((ctx, next) => {
-    console.log(1)
-    next(); // next不写会报错
-    console.log(5)
-});
-
-app.use((ctx, next) => {
-    console.log(2)
-    next();
-    console.log(4)
-});
-
-app.use((ctx, next) => {
-    console.log(3)
-    // 此处的ctx.body与ctx.response.body是同一个东西。
-    ctx.body = 'Hello World';
+// 原生路由
+app.use(async ctx => {
+    const { url } = ctx.request;
+    let page;
+    switch (url) {
+        case '/':
+            page = 'index.html';
+            break;
+        case '/index':
+            page = 'index.html';
+            break;
+        case '/home':
+            page = 'home.html';
+            break;
+        default:
+            page = '404.html';
+            break
+    }
+    ctx.response.type = 'html'; // 这里设置返回的类型是html
+    ctx.response.body = await readPage(page);
 });
 
 app.listen(3005, () => {
