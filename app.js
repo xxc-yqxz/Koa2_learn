@@ -17,7 +17,10 @@ app.use(koaNunjucks({
 app.use(async (ctx, next) => {
     await next();
     if (ctx.status === 404) {
-        await ctx.render('404', {})
+        await ctx.render('404', {
+            link: 'http://localhost:3005/home',
+            text: 'home'
+        })
     }
 })
 
